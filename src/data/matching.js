@@ -1,7 +1,7 @@
 // Answer normalization + fuzzy matching (ported from the original game,
 // with a tightened guard so a guess that is itself a different real school
 // can't fuzzy-match — e.g. "Florida" no longer counts for "Florida State").
-import { PLAYERS, ALIASES } from "./players.js";
+import { PLAYERS, ALIASES } from "./dataset.js";
 
 export function normalize(str) {
   let s = (str || "").toLowerCase();

@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { PLAYERS } from "./data/players.js";
+import { PLAYERS, CURRENT_PLAYERS } from "./data/dataset.js";
 import { isCorrectGuess } from "./data/matching.js";
 import { fetchLivePool } from "./data/rosters.js";
 
-const TIER_NAMES = { 1: "Rookie Camp", 2: "Starting Lineup", 3: "Deep Draft", live: "Current Rosters" };
+const TIER_NAMES = { 1: "Rookie Camp", 2: "Starting Lineup", 3: "Deep Draft", active: "Active Stars", live: "Current Rosters" };
 const STORAGE_PREFIX = "ntc_best_";
 
 function poolForTier(tier) {
   if (tier === 1) return PLAYERS.filter((p) => p.tier === 1);
   if (tier === 2) return PLAYERS.filter((p) => p.tier === 1 || p.tier === 2);
   if (tier === 3) return PLAYERS.filter((p) => p.tier === 3);
+  if (tier === "active") return CURRENT_PLAYERS;
   return [];
 }
 
@@ -46,6 +47,7 @@ const TIERS = [
   { id: 1, name: "Rookie Camp", desc: "Only the biggest household names. Great for casual fans and warming up." },
   { id: 2, name: "Starting Lineup", desc: "Stars and standouts across every era since 1980. The full, balanced experience." },
   { id: 3, name: "Deep Draft", desc: "Role players, specialists, and names only true film-room heads will know. Brutal." },
+  { id: "active", name: "Active Stars", desc: "A curated set of today's biggest names — offline and reliable, no live feed needed." },
   { id: "live", name: "Current Rosters", desc: "Live from ESPN — active players on today's NFL rosters. Fresh every game.", live: true },
 ];
 
