@@ -8,6 +8,7 @@ https://joreyfaber115.github.io
 - **Rookie Camp** — biggest household names only.
 - **Starting Lineup** — stars and standouts across every era since 1980.
 - **Deep Draft** — role players and deep cuts. Brutal.
+- **Active Stars** — curated list of today's biggest names (offline, reliable).
 - **Current Rosters** — live active players pulled from ESPN's public API.
 
 Type your answer — abbreviations and common nicknames are accepted
@@ -15,22 +16,46 @@ Type your answer — abbreviations and common nicknames are accepted
 are forgiven. Hints cost points; streaks earn bonuses. Best scores are saved
 locally per mode.
 
-## Develop
+## How it's hosted
+
+The live site is a single self-contained `index.html` at the repo root — all
+JavaScript and CSS are inlined into that one file. GitHub Pages serves it
+directly, with no build step on GitHub's side.
+
+One-time Pages setup (already done): **Settings → Pages → Source → Deploy from a
+branch → Branch: `main`, Folder: `/ (root)`**.
+
+The real source of truth is the React code in `src/`. The root `index.html` is
+generated *from* that source — you don't edit it by hand.
+
+## Making changes
+
+Edit the React source in `src/`, never the built `index.html` directly:
+
+- Add or edit players: `src/data/players.js` (all-time pool) or
+  `src/data/additions.js` (Active Stars + all-time additions). Add school
+  nicknames/abbreviations to the alias tables in those files.
+- Change game logic or UI: `src/App.jsx`.
+- Change styling: `src/styles.css`.
+
+To preview locally while editing:
 ```bash
-npm install
-npm run dev      # local dev server
-npm run build    # production build to dist/
+npm install      # first time only
+npm run dev      # opens a hot-reloading dev server
 ```
 
-## Deploy
+## Rebuild + redeploy
 
-The site is a single self-contained `index.html` at the repo root (all JS and CSS
-inlined). GitHub Pages serves it directly — no build step. Setup: **Settings →
-Pages → Source → Deploy from a branch → main → / (root)**.
-
-To edit the app, change the React source in `src/`, then rebuild the single file:
+After you're happy with your changes, regenerate the single file and push:
 ```bash
-npm install
-npm run build          # outputs dist/index.dev.html
-cp dist/index.dev.html index.html
+npm run build              # outputs dist/index.dev.html
+cp dist/index.dev.html index.html   # (Windows PowerShell: copy dist\index.dev.html index.html)
+git add -A
+git commit -m "Describe your change"
+git push
 ```
+
+That's the whole redeploy. **You do NOT need to touch the Pages settings again** —
+the one-time setup above is permanent. GitHub Pages automatically serves the new
+`index.html` within a minute of the push. Just hard-refresh the site
+(Ctrl+Shift+R) to see your changes.
