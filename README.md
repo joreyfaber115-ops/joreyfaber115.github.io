@@ -23,12 +23,14 @@ npm run build    # production build to dist/
 ```
 
 ## Deploy
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the app
-and publishes it to GitHub Pages. One-time setup: in the repo, go to
-**Settings → Pages → Build and deployment → Source → GitHub Actions**.
 
-## Data
-- Curated modes: `src/data/players.js` (~177 players, tiered by fame) and the
-  alias table for fuzzy matching.
-- Live mode: `src/data/rosters.js` fetches team rosters from ESPN. If ESPN is
-  unreachable, the game falls back to the curated list.
+The site is a single self-contained `index.html` at the repo root (all JS and CSS
+inlined). GitHub Pages serves it directly — no build step. Setup: **Settings →
+Pages → Source → Deploy from a branch → main → / (root)**.
+
+To edit the app, change the React source in `src/`, then rebuild the single file:
+```bash
+npm install
+npm run build          # outputs dist/index.dev.html
+cp dist/index.dev.html index.html
+```
