@@ -25,6 +25,7 @@ async function fetchTeamRoster(teamId) {
         college,
         tier: 0,
         live: true,
+        photo: a?.headshot?.href || null,
       });
     }
   }

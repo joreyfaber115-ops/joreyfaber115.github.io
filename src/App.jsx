@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PLAYERS, CURRENT_PLAYERS } from "./data/dataset.js";
 import { isCorrectGuess } from "./data/matching.js";
 import { fetchLivePool } from "./data/rosters.js";
+import { getPlayerPhoto } from "./data/photos.js";
 
 const TIER_NAMES = { 1: "Rookie Camp", 2: "Starting Lineup", 3: "Deep Draft", active: "Active Stars", live: "Current Rosters" };
 const STORAGE_PREFIX = "ntc_best_";
@@ -43,6 +44,15 @@ function shuffle(arr) {
   return a;
 }
 
+function initials(name) {
+  return name
+    .split(" ")
+    .filter((w) => /^[A-Z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+}
+
 const TIERS = [
   { id: 1, name: "Rookie Camp", desc: "Only the biggest household names. Great for casual fans and warming up." },
   { id: 2, name: "Starting Lineup", desc: "Stars and standouts across every era since 1980. The full, balanced experience." },
@@ -50,6 +60,44 @@ const TIERS = [
   { id: "active", name: "Active Stars", desc: "A curated set of today's biggest names — offline and reliable, no live feed needed." },
   { id: "live", name: "Current Rosters", desc: "Live from ESPN — active players on today's NFL rosters. Fresh every game.", live: true },
 ];
+
+// Player photo with graceful loading + fallback states. Live-mode players
+// already carry a `photo` URL from the ESPN API; curated-mode players are
+// looked up on demand from Wikipedia and cached.
+function PlayerPhoto({ player }) {
+  const [url, setUrl] = useState(player.photo || undefined); // undefined = loading, null = no photo found
+  const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    setBroken(false);
+    if (player.photo) {
+      setUrl(player.photo);
+      return;
+    }
+    let cancelled = false;
+    setUrl(undefined);
+    getPlayerPhoto(player.name).then((found) => {
+      if (!cancelled) setUrl(found);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [player.name, player.photo]);
+
+  return (
+    <div className="photo-wrap">
+      <div className="photo-ring">
+        <div className="photo-inner">
+          {url === undefined && <div className="photo-skeleton" />}
+          {url && !broken && (
+            <img src={url} alt={player.name} onError={() => setBroken(true)} loading="lazy" />
+          )}
+          {(url === null || broken) && <span className="photo-fallback">{initials(player.name)}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [screen, setScreen] = useState("difficulty");
@@ -193,8 +241,10 @@ export default function App() {
 
   return (
     <div className="wrap">
-      <h1 className="title">Name The College</h1>
-      <div className="subtitle">an all-time NFL scouting report · players since 1980</div>
+      <div className="app-header">
+        <h1 className="title">Name The College</h1>
+        <div className="subtitle">an all-time NFL scouting report · players since 1980</div>
+      </div>
 
       {screen === "difficulty" && (
         <div className="tier-cards">
@@ -269,6 +319,9 @@ export default function App() {
               <span>Prospect File</span>
               <span>#{String(round).padStart(3, "0")}</span>
             </div>
+
+            <PlayerPhoto player={current} key={current.name} />
+
             <div className="player-name">{current.name}</div>
             <div className="player-meta">
               {current.pos} · {current.era}
@@ -278,6 +331,7 @@ export default function App() {
             <form className="guess-form" onSubmit={submitGuess} autoComplete="off">
               <input
                 ref={inputRef}
+                id="guess-input"
                 type="text"
                 value={guess}
                 disabled={answered}

@@ -2,7 +2,12 @@
 
 Guess where each NFL player went to college. A React (Vite) game with a
 scouting-report theme, deployed to GitHub Pages at
-https://joreyfaber115.github.io
+https://joreyfaber115-ops.github.io/joreyfaber115.github.io/
+
+Note: the repo is named `joreyfaber115.github.io`, but because the GitHub
+account is `joreyfaber115-ops` (not an exact match), GitHub Pages serves it
+as a project site under that account's namespace rather than at the bare
+`joreyfaber115.github.io` domain. The URL above is the real one.
 
 ## Game modes
 - **Rookie Camp** — biggest household names only.
