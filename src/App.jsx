@@ -3,6 +3,7 @@ import { PLAYERS, CURRENT_PLAYERS } from "./data/dataset.js";
 import { isCorrectGuess } from "./data/matching.js";
 import { fetchLivePool } from "./data/rosters.js";
 import { getPlayerPhoto } from "./data/photos.js";
+import { SCHOOL_INFO } from "./data/schoolInfo.js";
 
 const TIER_NAMES = { 1: "Rookie Camp", 2: "Starting Lineup", 3: "Deep Draft", active: "Active Stars", live: "Current Rosters" };
 const STORAGE_PREFIX = "ntc_best_";
@@ -116,7 +117,7 @@ export default function App() {
   const [answered, setAnswered] = useState(false);
   const [correct, setCorrect] = useState(false);
   const [lastGuess, setLastGuess] = useState("");
-  const [hintUsed, setHintUsed] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0); // 0 = none, 1 = location, 2 = location+mascot
   const [pointsMsg, setPointsMsg] = useState("");
   const [newBest, setNewBest] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
@@ -135,7 +136,7 @@ export default function App() {
     setAnswered(false);
     setCorrect(false);
     setLastGuess("");
-    setHintUsed(false);
+    setHintLevel(0);
     setPointsMsg("");
     setNewBest(false);
     setShareMsg("");
@@ -195,7 +196,7 @@ export default function App() {
     let nextStreak = streak;
     if (ok) {
       let pts = 100;
-      if (hintUsed) pts -= 50;
+      pts -= hintLevel * 25;
       pts += streak * 10;
       nextScore = score + pts;
       nextStreak = streak + 1;
@@ -235,9 +236,22 @@ export default function App() {
     }
   }
 
-  const hint = current
-    ? `Hint: the school name has ${current.college.replace(/\s*\([^)]*\)/, "").length} characters and starts with "${current.college[0]}".`
-    : "";
+  const info = current ? SCHOOL_INFO[current.college] : null;
+  const hintLines = [];
+  if (current && hintLevel >= 1) {
+    hintLines.push(
+      info
+        ? `This program is located in ${info.state}.`
+        : `The school name has ${current.college.replace(/\s*\([^)]*\)/, "").length} characters.`
+    );
+  }
+  if (current && hintLevel >= 2) {
+    hintLines.push(
+      info
+        ? `Their teams are nicknamed the ${info.mascot}.`
+        : `It starts with the letter "${current.college[0]}".`
+    );
+  }
 
   return (
     <div className="wrap">
@@ -343,13 +357,25 @@ export default function App() {
               </button>
             </form>
 
-            {hintUsed && !answered && <div className="hint-text">{hint}</div>}
+            {hintLines.length > 0 && !answered && (
+              <div className="hint-text">
+                {hintLines.map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
+            )}
 
             {!answered && (
               <div className="btn-row">
-                <button type="button" className="btn-secondary" onClick={() => !hintUsed && setHintUsed(true)} disabled={hintUsed}>
-                  Request Hint (−50 pts)
-                </button>
+                {hintLevel < 2 && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setHintLevel((l) => Math.min(l + 1, 2))}
+                  >
+                    {hintLevel === 0 ? "Hint: Location (−25 pts)" : "Hint: Mascot (−25 pts)"}
+                  </button>
+                )}
                 <button type="button" className="btn-secondary" onClick={() => endRound(false, null)}>
                   Skip
                 </button>
